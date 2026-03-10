@@ -36,22 +36,20 @@ print(" Embeddings loaded")
 # ChromaDB setup
 persist_directory = "./chroma_db"
 
-# Remove existing ChromaDB if you want to recreate
 if os.path.exists(persist_directory):
     print(f"Removing existing ChromaDB at {persist_directory}")
     shutil.rmtree(persist_directory)
 
 print(f" Creating ChromaDB at {persist_directory} with {len(text_chunks)} chunks...")
 
-# Generate IDs manually to avoid the attribute error
+
 ids = [str(uuid.uuid4()) for _ in range(len(text_chunks))]
 
-# Create ChromaDB from documents with explicit IDs
 docsearch = Chroma.from_documents(
     documents=text_chunks,
     embedding=embeddings,
     persist_directory=persist_directory,
-    ids=ids  # Explicitly provide IDs
+    ids=ids  
 )
 
 print(f" ChromaDB created successfully!")
