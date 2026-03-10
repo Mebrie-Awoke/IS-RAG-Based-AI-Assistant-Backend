@@ -60,7 +60,7 @@ print(f" Total chunks indexed: {len(text_chunks)}")
 
 # Test the retrieval
 print("\n Testing retrieval...")
-test_query = "medical information"
+test_query = "Information System Department"
 results = docsearch.similarity_search(test_query, k=2)
 print(f"Test query: '{test_query}'")
 print(f"Found {len(results)} relevant chunks")
