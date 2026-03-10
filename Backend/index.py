@@ -1,0 +1,75 @@
+# index.py
+from dotenv import load_dotenv
+import os
+import shutil
+import uuid  # Add this import
+from src.document_ingestion import load_pdf_file, filter_to_minimal_docs, text_split, download_hugging_face_embeddings
+from langchain_chroma import Chroma
+from langchain.schema import Document  # Import Document for type checking
+
+load_dotenv()
+
+GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
+os.environ["GROQ_API_KEY"] = GROQ_API_KEY
+
+print("📚 Loading PDF files...")
+extracted_data = load_pdf_file(data='Documents/')
+print(f"✅ Loaded {len(extracted_data)} pages")
+
+print("🔍 Filtering documents...")
+filter_data = filter_to_minimal_docs(extracted_data)
+print(f"✅ Filtered to {len(filter_data)} documents")
+
+print("✂️ Splitting into chunks...")
+text_chunks = text_split(filter_data)
+print(f"✅ Created {len(text_chunks)} text chunks")
+
+# Ensure all chunks have page_content (basic check)
+for i, chunk in enumerate(text_chunks):
+    if not hasattr(chunk, 'page_content') or not chunk.page_content:
+        print(f"⚠️ Warning: Chunk {i} has no content, skipping")
+        text_chunks.pop(i)
+
+print("🎯 Loading embeddings...")
+embeddings = download_hugging_face_embeddings()
+print("✅ Embeddings loaded")
+
+# ChromaDB setup
+persist_directory = "./chroma_db"
+
+# Remove existing ChromaDB if you want to recreate
+if os.path.exists(persist_directory):
+    print(f"🗑️ Removing existing ChromaDB at {persist_directory}")
+    shutil.rmtree(persist_directory)
+
+print(f"💾 Creating ChromaDB at {persist_directory} with {len(text_chunks)} chunks...")
+
+# Generate IDs manually to avoid the attribute error
+ids = [str(uuid.uuid4()) for _ in range(len(text_chunks))]
+
+# Create ChromaDB from documents with explicit IDs
+docsearch = Chroma.from_documents(
+    documents=text_chunks,
+    embedding=embeddings,
+    persist_directory=persist_directory,
+    ids=ids  # Explicitly provide IDs
+)
+
+print(f"✅ ChromaDB created successfully!")
+print(f"📁 Database saved to: {persist_directory}")
+print(f"📊 Total chunks indexed: {len(text_chunks)}")
+
+# Test the retrieval
+print("\n🔍 Testing retrieval...")
+test_query = "medical information"
+results = docsearch.similarity_search(test_query, k=2)
+print(f"Test query: '{test_query}'")
+print(f"Found {len(results)} relevant chunks")
+
+for i, doc in enumerate(results):
+    print(f"\nResult {i+1}:")
+    print(f"Content preview: {doc.page_content[:200]}...")
+    if hasattr(doc, 'metadata'):
+        print(f"Metadata: {doc.metadata}")
+
+print("✅ Setup complete!")
