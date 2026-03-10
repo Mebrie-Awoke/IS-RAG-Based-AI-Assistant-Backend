@@ -1,6 +1,6 @@
 from flask import Flask, render_template, jsonify, request
 from src.document_ingestion import download_hugging_face_embeddings
-from langchain_chroma import Chroma  # Changed from langchain_pinecone
+from langchain_chroma import Chroma  
 from langchain_groq import ChatGroq
 from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
@@ -13,7 +13,6 @@ app = Flask(__name__)
 
 load_dotenv()
 
-# Removed PINECONE_API_KEY since we're using ChromaDB
 GROQ_API_KEY = os.environ.get('GROQ_API_KEY')
 
 os.environ["GROQ_API_KEY"] = GROQ_API_KEY
@@ -45,7 +44,7 @@ retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k":
 
 # Using Groq as before
 chatModel = ChatGroq(
-    model="llama-3.3-70b-versatile",  # Latest Llama model
+    model="llama-3.3-70b-versatile", 
     temperature=0.1,
     max_tokens=1024,
 )
