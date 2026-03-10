@@ -1,1 +1,2 @@
-"# AAU-RAG-Based-AI-Assistant" 
+# IS-RAG-Based-AI-Assistant
+## This is RAG based AI assistant for Information System 
