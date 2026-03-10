@@ -4,8 +4,6 @@ from langchain_community.embeddings import HuggingFaceEmbeddings
 from typing import List
 from langchain.schema import Document  
 
-
-# Extract Data From the PDF File
 def load_pdf_file(data):
     loader = DirectoryLoader(data,
                             glob="*.pdf",
