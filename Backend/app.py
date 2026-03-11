@@ -1,5 +1,5 @@
 from flask import Flask, render_template, jsonify, request
-from src.document_ingestion import download_hugging_face_embeddings
+from src.helper import download_hugging_face_embeddings
 from langchain_chroma import Chroma  
 from langchain_groq import ChatGroq
 from langchain.chains import create_retrieval_chain
@@ -19,7 +19,6 @@ os.environ["GROQ_API_KEY"] = GROQ_API_KEY
 
 embeddings = download_hugging_face_embeddings()
 
-
 persist_directory = "./chroma_db"  
 if os.path.exists(persist_directory):
     docsearch = Chroma(
@@ -37,7 +36,7 @@ else:
 retriever = docsearch.as_retriever(search_type="similarity", search_kwargs={"k": 3})
 
 chatModel = ChatGroq(
-    model="llama-3.3-70b-versatile", 
+    model="llama-3.3-70b-versatile",  
     temperature=0.1,
     max_tokens=1024,
 )
@@ -52,12 +51,11 @@ prompt = ChatPromptTemplate.from_messages(
 question_answer_chain = create_stuff_documents_chain(chatModel, prompt)
 rag_chain = create_retrieval_chain(retriever, question_answer_chain)
 
-template_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Frontend', 'templates'))
-static_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Frontend', 'static'))
 
-app = Flask(__name__, 
-            template_folder=template_dir,
-            static_folder=static_dir)
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+app = Flask(__name__,
+            template_folder=os.path.join(project_root, 'Frontend', 'templates'),
+            static_folder=os.path.join(project_root, 'Frontend', 'static'))
 
 @app.route("/")
 def index():
