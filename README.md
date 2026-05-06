@@ -3,4 +3,3 @@
 #### AI-Assistant-for-IS-department
 
 
-M
